@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flooddatabase</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <!-- <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css">
+      <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css">
+      <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.css">
+      <link rel="stylesheet" href="assets/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.css"> -->
+  <link rel="stylesheet" href="assets/css/style.css">
+
+</head>
+
+<body>
+  <div id="pano"></div>
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" id="#tab" href="#"><i class="fa fa-twitter white"></i>&nbsp;Twitter Tab</a>
+        <div class="navbar-icon-container">
+
+          <a href="#" class="navbar-icon pull-right visible-xs" id="nav-btn"><i class="fa fa-bars fa-lg white"></i></a>
+          <a href="#" class="navbar-icon pull-right visible-xs" id="sidebar-toggle-btn"><i
+              class="fa fa-search fa-lg white"></i></a>
+        </div>
+
+      </div>
+
+      <!--/.navbar-collapse -->
+    </div>
+  </div>
+  <div id="loading">
+    <div class="loading-indicator">
+      <div class="progress progress-striped active" style="width:auto">
+        <div class="progress-bar progress-bar-striped progress-bar-full"></div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+
+    <div class="form-title text-center">
+      <h2 class="text-dark">Search Flood Data On Twitter</h2>
+      <span class="text-light">Use the below form to search tweets</span>
+    </div>
+
+    <!-- twitter form -->
+
+    <div class="new_flood">
+
+      <div class="form-group">
+        <label for="start-date" class="text-light">Flood Start Date</label><br>
+        <input type="date" name="StartDate" id="twitstartdate" required>
+      </div>
+      <div class="form-group">
+        <label for="end-date" class="text-light">Flood End Date</label><br>
+        <input type="date" id="twitenddate" name="EndDate" required>
+      </div>
+      <div class="form-group">
+        <label for="country" class="text-light">Country</label><br>
+
+        <select id="twitcountry" name="CountryName">
+          <option value="India">India</option>
+          <option value="Indonesia">Indonesia</option>
+          <option value="Japan">Japan</option>
+          <option value="Laos">Laos</option>
+          <option value="Thailand">Thailand</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+
+        <button type="submit" onclick="gettwit();" class="button button1">Submit</button>
+      </div>
+    </div>
+
+
+  </div>
+
+
+
+
+
+  <!-- <div class="sidebar-table">
+                 
+                  <table class="table table-hover" id="feature-list">
+                    <thead class="hidden">
+                      <tr>
+                        <th>Icon</th>
+                      <tr>
+                      <tr>
+                        <th>Name</th>
+                      <tr>
+                      <tr>
+                        <th>Chevron</th>
+                      <tr>
+                    </thead>
+                    <tbody class="list"></tbody>
+                  </table>
+                </div> -->
+  </div>
+  </div>
+  </div>
+  <div id="graph">
+    <canvas id="canvas"> </canvas>
+  </div>
+  <div id="tweet-table">
+    <!-- Main Site -->
+    <main id="site-main">
+      <div class="container">
+
+
+
+        <table class="table twittable">
+          <thead class="thead-dark">
+            <tr>
+              <th>S.N.</th>
+              <th>StartDate</th>
+
+              <th>Country</th>
+              <th>Tweet</th>
+
+            </tr>
+          </thead>
+          <tbody id="twitsbody">
+
+          </tbody>
+        </table>
+
+
+      </div>
+    </main>
+    <!-- /Main Site -->
+  </div>
+  </div>
+  <!-- Main Site -->
+  <!-- <main id="site-main">
+        <div class="container">
+
+
+
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+
+                        <th>StartDate</th>
+
+                        <th>Country</th>
+                        <th>twit</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+
+
+        </div>
+    </main> -->
+  <!-- /Main Site -->
+
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.3.2/dist/chart.min.js"></script>
+  <script src="custom.js"></script>
+</body>
+<script>
+  var twitsdata;
+  var twitdata;
+  var twitstart;
+  var twitend;
+  var tstartdate;
+  var twittab;
+  var tenddate;
+  var tcountry;
+  var twitcountryselect;
+  var requiredtwits = [];
+  var notweets = [];
+  var ctx  ; 
+  var myChart = new Chart( );
+  var tweetsondate = 0;
+  var tweetsanalysisdate = [];
+  var daterepeat;
+  $(document).ready(function () {
+
+    $.ajax({
+      url: 'https://agile-hollows-34401.herokuapp.com/twits',
+      type: 'GET',
+
+      success: function (alltwit) {
+
+        $("#loading").hide();
+        $("#pano").hide();
+
+        twitsdata = alltwit;
+        console.log(twitsdata);
+
+      }
+      ,
+      error: function (error) {
+        console.log(error);
+
+      }
+    });
+  });
+
+
+  function formatDate(input) {
+
+    var datePart = input.match(/\d+/g),
+      year = datePart[0], // get only two digits
+      month = datePart[1], day = datePart[2];
+
+    return day + '/' + month + '/' + year;
+  }
+  function gettwit() {
+    requiredtwits.splice(0, requiredtwits.length);
+    notweets.splice(0, notweets.length);
+    tweetsanalysisdate.splice(0, tweetsanalysisdate.length);
+
+    myChart.destroy();
+    var x = document.getElementById("twitstartdate").value
+    var y = document.getElementById("twitenddate").value
+    twitcountryselect = document.getElementById("twitcountry").value
+    x = x.replace(/\-/g, '/');
+    y = y.replace(/\-/g, '/');
+    twitstart = formatDate(x);
+    twitend = formatDate(y);
+    //tweetdata-parsing
+    for (var j = 0; j < twitsdata.length; j++) {
+
+      twitdata = twitsdata[j]["twitdata"];
+      tcountry = twitsdata[j]["CountryName"];
+      console.log(twitdata);
+      for (var i = 0; i < twitdata.length; i++) {
+        tstartdate = twitdata[i]["Datetime"];
+        tstartdate = tstartdate.replace(/\-/g, '/');
+
+
+        d1 = twitstart.split("/");
+        d2 = twitend.split("/");
+        c1 = tstartdate.split("/");
+
+        var from = new Date(d1[2], parseInt(d1[1]) - 1, d1[0]);  // -1 because months are from 0 to 11
+        var to = new Date(d2[2], parseInt(d2[1]) - 1, d2[0]);
+        var check1 = new Date(c1[2], parseInt(c1[1]) - 1, c1[0]);
+
+
+        if ((check1 > from && check1 < to) && (twitcountryselect == tcountry)) {
+
+          requiredtwits.push(twitdata[i]);
+
+
+
+        }
+      }
+    }
+    console.log(requiredtwits);
+
+
+    twittab = "";
+    daterepeat = requiredtwits[0]["Datetime"];
+    for (var k = 0; k < requiredtwits.length; k++) {
+
+      if (daterepeat === requiredtwits[k]["Datetime"]) {
+        tweetsondate = tweetsondate + 1;
+
+      }
+      else {
+        notweets.push(tweetsondate);
+        tweetsanalysisdate.push(daterepeat);
+        tweetsondate = 1;
+        daterepeat = requiredtwits[k]["Datetime"];
+      }
+      twittab += "<tr><td>" + k + "</td><td>" + requiredtwits[k]["Datetime"] + "</td><td>" + tcountry + "</td><td><img src='https://img.icons8.com/fluent/28/000000/twitter.png'/>   " + "<a add target='_blank'  href=" + "https://twitter.com/anyuser/status/".concat((requiredtwits[k]["Tweet Id"]).replace(/\#/g, '')) + ">https://twitter.com/anyuser/status/".concat(requiredtwits[k]["Tweet Id"]).replace(/\#/g, '') + "</a></td></tr>"
+
+
+    }
+    
+    document.getElementById('twitsbody').innerHTML = twittab;
+    console.log(notweets);
+
+    ctx = document.getElementById('canvas').getContext('2d');
+    myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: tweetsanalysisdate,
+        datasets: [{
+          label: 'Tweet Analysis',
+          data: notweets,
+          backgroundColor: 'transparent',
+          borderColor: '#0E75D3',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+
+  }
+
+
+
+
+
+</script>
+
+</html>

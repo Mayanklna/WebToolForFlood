@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>Getflooddata</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <!-- <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css">
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.Default.css">
+    <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.css">
+    <link rel="stylesheet" href="assets/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.css"> -->
+  <link rel="stylesheet" href="assets/css/app.css">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="assets/img/favicon-76.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="assets/img/favicon-120.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="assets/img/favicon-152.png">
+  <link rel="icon" sizes="196x196" href="assets/img/favicon-196.png">
+  <link rel="icon" type="image/x-icon" href="assets/img/favicon.ico">
+</head>
+
+<body>
+  <div id="pano"></div>
+  <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#"> Flood Explorer </a>
+        <div class="navbar-icon-container">
+
+          <a href="#" class="navbar-icon pull-right visible-xs" id="nav-btn"><i class="fa fa-bars fa-lg white"></i></a>
+          <a href="#" class="navbar-icon pull-right visible-xs" id="sidebar-toggle-btn"><i
+              class="fa fa-search fa-lg white"></i></a>
+        </div>
+
+      </div>
+      <div class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+
+          <li> <a add target="_blank" href="twitter-tab" data-toggle="collapse" data-target=".navbar-collapse.in" id="tweet-btn"
+              style=" color:white; text-decoration: none; "> Model-Deploy
+               </a></li>
+
+        </ul>
+        <ul class="nav navbar-nav">
+
+          <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" id="about-btn"><i
+                class="fa fa-question-circle white"></i>&nbsp;&nbsp;About</a></li>
+          <!-- <li class="dropdown">
+            <a id="toolsDrop" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown"><i
+                class="fa fa-globe white"></i>&nbsp;&nbsp;Tools <b class="caret"></b></a>
+            <!-- <ul class="dropdown-menu">
+                <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" id="full-extent-btn"><i class="fa fa-arrows-alt"></i>&nbsp;&nbsp;Zoom To Full Extent</a></li>
+                <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" id="legend-btn"><i class="fa fa-picture-o"></i>&nbsp;&nbsp;Show Legend</a></li>
+                <li class="divider hidden-xs"></li>
+                <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" id="login-btn"><i class="fa fa-user"></i>&nbsp;&nbsp;Login</a></li>
+              </ul> -->
+          </li>
+          <!-- <li class="dropdown">
+            <a class="dropdown-toggle" id="downloadDrop" href="#" role="button" data-toggle="dropdown"><i
+                class="fa fa-cloud-download white"></i>&nbsp;&nbsp;Download <b class="caret"></b></a>
+            <!-- <ul class="dropdown-menu">
+                  <li><a href="data/boroughs.geojson" download="boroughs.geojson" target="_blank" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-download"></i>&nbsp;&nbsp;Boroughs</a></li>
+                  <li><a href="data/subways.geojson" download="subways.geojson" target="_blank" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-download"></i>&nbsp;&nbsp;Subway Lines</a></li>
+                  <li><a href="data/DOITT_THEATER_01_13SEPT2010.geojson" download="theaters.geojson" target="_blank" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-download"></i>&nbsp;&nbsp;Theaters</a></li>
+                  <li><a href="data/DOITT_MUSEUM_01_13SEPT2010.geojson" download="museums.geojson" target="_blank" data-toggle="collapse" data-target=".navbar-collapse.in"><i class="fa fa-download"></i>&nbsp;&nbsp;Museums</a></li>
+                </ul> -->
+          </li> -->
+          <li><a href="#" data-toggle="collapse" data-target=".navbar-collapse.in" id="sidebar-hide-btn2"><i 
+                class="fa fa-list white"></i>&nbsp;&nbsp;Query Data</a></li>
+        </ul>
+      </div>
+      <!--/.navbar-collapse -->
+    </div>
+  </div>
+  <div id="loading">
+    <div class="loading-indicator">
+      <div class="progress progress-striped active" style="width:auto">
+        <div class="progress-bar progress-bar-striped progress-bar-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="container">
+
+    <div id="sidebar">
+      <div class="sidebar-wrapper">
+        <div class="panel panel-default" id="features">
+          <div class="panel-heading">
+            <h3 class="panel-title">Search Flood Data
+              <button type="button" class="btn btn-xs btn-default pull-right" id="sidebar-hide-btn"><i
+                  class="fa fa-chevron-left"></i></button>
+            </h3>
+          </div>
+          <div class="panel-body">
+
+            <div class="column">
+              <div class="col-xs-8 col-md-8">
+                <div id="Start">
+                  <label for="start-date">Flood Start date</label><br>
+                  <input type="date" id="startdate" name="birthday">
+
+                </div>
+                <div id="End" style="margin-top:0.3125rem;">
+                  <label for="end-date">Flood End date</label><br>
+                  <input type="date" id="enddate" name="birthday">
+
+                </div>
+
+                <div class="dropdown" id="Countrydrop" style="margin-top:0.3125rem;">
+
+                  <label for="cars">Country</label><br>
+
+                  <select id="countries" name="countries">
+                    <option value="India">India</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Thailand">Thailand</option>
+                  </select>
+
+
+                </div>
+
+                <div id="satellites" style="margin-top:0.3125rem;">
+
+                  <div style="width: 240px;">
+                    <label>Optical Satellite Sensors</label><br>
+                    <input type="checkbox" id="planet" name="planet" value="Planet">
+                    Planet <br>
+                    
+                    <input type="checkbox" id="sentinel2" name="sentinal2" value="Sentinel-II">
+                    Sentinel-II
+                  </div>
+                  <div style="width: 240px;">
+                    <label>SAR Satellite Sensors</label><br>
+
+                    
+                    <input type="checkbox" id="sentinel1" name="sentinel1" value="Sentinel-I">
+                    Sentinel-I
+                  </div>
+                </div>
+                <div id="submitbutton">
+                  <button type="submit" onclick="getVal();" class="button button1">Submit</button>
+                  <!-- <button type="button" onclick="getVal();"  class="btn btn-primary">
+                        <font color="white"> Submit</font>
+                     </button> -->
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          <div   id="panelbefore">
+            <h3 class="panel-title">Satellite Sensors Data
+            </h3>
+          </div>
+
+
+          <div class="alldata">
+            <div class="flooddataclass">
+              <h3 class="panel-title" id="opticaldata" style="display: none" >Optical Satellite Sensors</h3>
+              <ul class="list-group" id="feature-list1"></ul>
+              <h3 class="panel-title" id="sardata" style="display: none">SAR Satellite Sensors</h3>
+              <ul class="list-group" id="feature-list2"></ul>
+              <h3 class="panel-title" id="weblink" style="display: none">Floodlist Weblinks</h3>
+              <ul class="list-group" id="feature-list3"></ul>
+            </div>
+          </div>
+
+
+          <!-- <div class="sidebar-table">
+             
+              <table class="table table-hover" id="feature-list">
+                <thead class="hidden">
+                  <tr>
+                    <th>Icon</th>
+                  <tr>
+                  <tr>
+                    <th>Name</th>
+                  <tr>
+                  <tr>
+                    <th>Chevron</th>
+                  <tr>
+                </thead>
+                <tbody class="list"></tbody>
+              </table>
+            </div> -->
+        </div>
+      </div>
+    </div>
+    <div id="map"></div>
+  </div>
+
+
+
+  <!-- <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Welcome to the BootLeaf template!</h4>
+          </div>
+          <div class="modal-body">
+            <ul class="nav nav-tabs nav-justified" id="aboutTabs">
+              <li class="active"><a href="#about" data-toggle="tab"><i class="fa fa-question-circle"></i>&nbsp;About the project</a></li>
+              <li><a href="#contact" data-toggle="tab"><i class="fa fa-envelope"></i>&nbsp;Contact us</a></li>
+              <li><a href="#disclaimer" data-toggle="tab"><i class="fa fa-exclamation-circle"></i>&nbsp;Disclaimer</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-globe"></i>&nbsp;Metadata <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                  <li><a href="#boroughs-tab" data-toggle="tab">Boroughs</a></li>
+                  <li><a href="#subway-lines-tab" data-toggle="tab">Subway Lines</a></li>
+                  <li><a href="#theaters-tab" data-toggle="tab">Theaters</a></li>
+                  <li><a href="#museums-tab" data-toggle="tab">Museums</a></li>
+                </ul>
+              </li>
+            </ul>
+            <div class="tab-content" id="aboutTabsContent">
+              <div class="tab-pane fade active in" id="about">
+                <p>A simple, responsive template for building web mapping applications with <a href="http://getbootstrap.com/">Bootstrap 3</a>, <a href="http://leafletjs.com/" target="_blank">Leaflet</a>, and <a href="http://twitter.github.io/typeahead.js/" target="_blank">typeahead.js</a>. Open source, MIT licensed, and available on <a href="https://github.com/bmcbride/bootleaf" target="_blank">GitHub</a>.</p>
+                <div class="panel panel-primary">
+                  <div class="panel-heading">Features</div>
+                  <ul class="list-group">
+                    <li class="list-group-item">Fullscreen mobile-friendly map template with responsive navbar and modal placeholders</li>
+                    <li class="list-group-item">jQuery loading of external GeoJSON files</li>
+                    <li class="list-group-item">Logical multiple layer marker clustering via the <a href="https://github.com/Leaflet/Leaflet.markercluster" target="_blank">leaflet marker cluster plugin</a></li>
+                    <li class="list-group-item">Elegant client-side multi-layer feature search with autocomplete using <a href="http://twitter.github.io/typeahead.js/" target="_blank">typeahead.js</a></li>
+                    <li class="list-group-item">Responsive sidebar feature list synced with map bounds, which includes sorting and filtering via <a href="http://listjs.com/" target="_blank">list.js</a></li>
+                    <li class="list-group-item">Marker icons included in grouped layer control via the <a href="https://github.com/ismyrnow/Leaflet.groupedlayercontrol" target="_blank">grouped layer control plugin</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div id="disclaimer" class="tab-pane fade text-danger">
+                <p>The data provided on this site is for informational and planning purposes only.</p>
+                <p>Absolutely no accuracy or completeness guarantee is implied or intended. All information on this map is subject to such variations and corrections as might result from a complete title search and/or accurate field survey.</p>
+              </div>
+              <div class="tab-pane fade" id="contact">
+                <form id="contact-form">
+                  <div class="well well-sm">
+                    <div class="row">
+                      <div class="col-md-4">
+                        <div class="form-group">
+                          <label for="first-name">First Name:</label>
+                          <input type="text" class="form-control" id="first-name">
+                        </div>
+                        <div class="form-group">
+                          <label for="last-name">Last Name:</label>
+                          <input type="text" class="form-control" id="last-email">
+                        </div>
+                        <div class="form-group">
+                          <label for="email">Email:</label>
+                          <input type="text" class="form-control" id="email">
+                        </div>
+                      </div>
+                      <div class="col-md-8">
+                        <label for="message">Message:</label>
+                        <textarea class="form-control" rows="8" id="message"></textarea>
+                      </div>
+                      <div class="col-md-12">
+                        <p>
+                          <button type="submit" class="btn btn-primary pull-right" data-dismiss="modal">Submit</button>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div class="tab-pane fade" id="boroughs-tab">
+                <p>Borough data courtesy of <a href="http://www.nyc.gov/html/dcp/pdf/bytes/nybbwi_metadata.pdf" target="_blank">New York City Department of City Planning</a></p>
+              </div>
+              <div class="tab-pane fade" id="subway-lines-tab">
+                <p><a href="http://spatialityblog.com/2010/07/08/mta-gis-data-update/#datalinks" target="_blank">MTA Subway data</a> courtesy of the <a href="http://www.urbanresearch.org/about/cur-components/cuny-mapping-service" target="_blank">CUNY Mapping Service at the Center for Urban Research</a></p>
+              </div>
+              <div class="tab-pane fade" id="theaters-tab">
+                <p>Theater data courtesy of <a href="https://data.cityofnewyork.us/Recreation/Theaters/kdu2-865w" target="_blank">NYC Department of Information & Telecommunications (DoITT)</a></p>
+              </div>
+              <div class="tab-pane fade" id="museums-tab">
+                <p>Museum data courtesy of <a href="https://data.cityofnewyork.us/Recreation/Museums-and-Galleries/sat5-adpb" target="_blank">NYC Department of Information & Telecommunications (DoITT)</a></p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> -->
+  <!-- </div>/.modal-content -->
+  <!-- </div>/.modal-dialog -->
+  <!-- </div>/.modal -->
+
+  <!-- <div class="modal fade" id="legendModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Map Legend</h4>
+          </div>
+          <div class="modal-body">
+            <p>Map Legend goes here...</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> -->
+  <!-- </div>/.modal-content -->
+  <!-- </div>/.modal-dialog -->
+  <!-- </div>/.modal -->
+
+  <!-- <div class="modal fade" id="loginModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">Login</h4>
+          </div>
+          <div class="modal-body">
+            <form id="contact-form">
+              <fieldset>
+                <div class="form-group">
+                  <label for="name">Username:</label>
+                  <input type="text" class="form-control" id="username">
+                </div>
+                <div class="form-group">
+                  <label for="email">Password:</label>
+                  <input type="password" class="form-control" id="password">
+                </div>
+              </fieldset>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" data-dismiss="modal">Login</button>
+          </div>
+        </div> /.modal-content  
+      </div>  /.modal-dialog  
+    </div>  /.modal -->
+
+  <!-- <div class="modal fade" id="featureModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title text-primary" id="feature-title"></h4>
+          </div>
+          <div class="modal-body" id="feature-info"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div> -->
+  <!-- </div>/.modal-content -->
+  <!-- </div>/.modal-dialog -->
+  <!-- </div>/.modal -->
+
+  <!-- <div class="modal fade" id="attributionModal" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" type="button" data-dismiss="modal" aria-hidden="true">&times;</button>
+           
+          </div>
+          <div class="modal-body">
+            <div id="attribution"></div>
+          </div> -->
+  <!-- </div>/.modal-content -->
+  <!-- </div>/.modal-dialog -->
+  <!-- </div>/.modal -->
+  <!-- 
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typeahead.js/0.10.5/typeahead.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-locatecontrol/v0.43.0/L.Control.Locate.min.js"></script>
+    <script src="assets/leaflet-groupedlayercontrol/leaflet.groupedlayercontrol.js"></script> -->
+
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+  <script src="assets/js/app.js"></script>
+</body>
+ 
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 
+<script  >
+  var footprint;
+  var coordinatesarray;
+  var cell_data;
+  var actualdata;
+  var country;
+  var s1,s2,s3,s4,s5;
+  var datacheck;
+  var satellites;
+  var employee_data;
+  var flooddatasearch;
+  var csvflooddata;
+   var ispaused=false;
+   var issubmit=false;
+   var startdate;
+   var enddate;
+   var setstart;
+   var setend;
+   var requireddata=[];
+   var finaldata=[];
+   var floodname=[];
+   var csvfloodsarray=[];
+   var selectcountry;
+   var detaildata;
+  //    $(document).ready(function(){
+    
+  //     $.ajax({
+  //      url:'https://agile-hollows-34401.herokuapp.com/flooddata',
+  //      type: 'GET',
+       
+  //      success:function(allflood)
+  //      { 
+     
+  //       actualdata=allflood;
+  //       console.log(actualdata);
+  //     if(typeof(actualdata)=="object"){
+  //       issubmit=true;
+  //     }
+      
+    
+  //  }
+  //      ,
+  //      error:function(error)
+  //      { 
+  //       console.log(error);
+         
+  //       }
+  //     });
+    
+     
+  //   });
+   
+    function formatDate (input) {
+    var datePart = input.match(/\d+/g),
+    year = datePart[0] , // get only two digits
+    month = datePart[1], day = datePart[2];
+  
+    return day+'/'+month+'/'+year;
+  }
+     
+function getVal(){
+   
+  requireddata.length=0;
+
+    
+    var x = document.getElementById("startdate").value
+     var  y= document.getElementById("enddate").value
+     selectcountry= document.getElementById("countries").value;
+     if(document.getElementById("planet").checked ===true){
+     s1= document.getElementById("planet").value;
+     document.getElementById('panel-heading').innerHTML="Optical Satellite Sensors"; }
+     if(document.getElementById("sentinal1").checked ===true){
+     s2= document.getElementById("sentinal1").value;
+     document.getElementById('panel-heading').innerHTML="SAR Satellite Sensors";}
+     if(document.getElementById("sentinal2").checked ===true){
+     s3= document.getElementById("sentinal2").value;}
+     if(document.getElementById("digital").checked ===true){
+     s4= document.getElementById("digital").value;}
+     if(document.getElementById("alos2").checked ===true){
+     s5= document.getElementById("alos2").value;}
+     x = x.replace(/\-/g, '/');
+     y=y.replace(/\-/g, '/');
+       setstart=formatDate(x);
+       setend=formatDate(y);
+       
+   
+  
+   
+    // var flooddatasearch = JSON.parse(actualdata);
+   
+  
+  for(var j=0;j<actualdata.length;j++){
+  
+         
+      
+        startdate=actualdata[j]["StartDate"];
+        enddate=actualdata[j]["EndDate"];
+        country=actualdata[j]["CountryName"];
+        satellites=actualdata[j]["SatelliteName"];
+        var d1 = setstart.split("/");
+  var d2 =setend.split("/");
+  var c1 = startdate.split("/");
+  var c2=enddate.split("/");
+  var from = new Date(d1[2], parseInt(d1[1])-1, d1[0]);  // -1 because months are from 0 to 11
+  var to   = new Date(d2[2], parseInt(d2[1])-1, d2[0]);
+  var check1 = new Date(c1[2], parseInt(c1[1])-1, c1[0]);
+  var check2 = new Date(c2[2], parseInt(c2[1])-1, c2[0]);
+  if((check1 > from && check1 < to)&&(check2 > from && check2 < to)&&selectcountry===country && (s1===satellites ||s2===satellites||s3===satellites||s4===satellites)){
+       console.log("in date range" +selectcountry);
+       requireddata.push(actualdata[j]["FloodCSVData"]);
+       floodname.push("Flood data-"+country+" from "+startdate+" to "+enddate +" "+satellites+" data");
+  }
+   else if(j==actualdata.length-1 &&requireddata.length==0){
+     alert("no data found");
+   }
+  // console.log(check1 > from && check1 < to);
+  // console.log("to");
+  // console.log(check2 > from && check2 < to);
+  }
+  
+   
+  if(requireddata.length !=0){
+  for(var l=0;l<requireddata.length;l++){
+  for(var k=0;k<requireddata[l].length;k++){
+    requireddata[l][k]["footprint"]= JSON.stringify(requireddata[l][k]["footprint"]);
+    
+     
+    if(k==requireddata[l].length-1){
+      ispaused=true;
+    }
+   }
+  }
+  console.log(requireddata);
+  //convert json to csv 
+  for(var f=0;f<requireddata.length;f++){
+    for(var g=0;g<requireddata[f].length;g++){
+      delete requireddata[f][g]["permissions"];
+      delete requireddata[f][g]["links_self"];
+      delete requireddata[f][g]["links_assets"];
+      delete requireddata[f][g]["links_thumbnail"];
+      delete requireddata[f][g]["clear_confidence_percent"];
+      delete requireddata[f][g]["clear_percent"];
+      delete requireddata[f][g]["columns"];
+      delete requireddata[f][g]["ground_control"];
+      delete requireddata[f][g]["heavy_haze_percent"];
+      delete requireddata[f][g]["light_haze_percent"];
+      delete requireddata[f][g]["pixel_resolution"];
+      delete requireddata[f][g]["published"];
+       delete requireddata[f][g]["publishing_stage"];
+       delete requireddata[f][g]["quality_category"];
+       delete requireddata[f][g]["rows"]; 
+       delete requireddata[f][g]["satellite_id"];
+       delete requireddata[f][g]["shadow_percent"];
+       delete requireddata[f][g]["snow_ice_percent"];
+       delete requireddata[f][g]["strip_id"];
+       delete requireddata[f][g]["sun_azimuth"];
+       delete requireddata[f][g]["link"];
+       delete requireddata[f][g]["sun_elevation"];
+       delete requireddata[f][g]["updated"];
+       delete requireddata[f][g]["view_angle"];
+       delete requireddata[f][g]["visible_confidence_percent"];
+       delete requireddata[f][g]["visible_percent"];
+
+    }
+  flooddatasearch=requireddata[f];
+  console.log(requireddata[f]);
+  var fields = Object.keys(flooddatasearch[0])
+  var replacer = function(key, value) { return value === null ? '' : value } 
+   csvflooddata =flooddatasearch.map(function(row){
+    return fields.map(function(fieldName){
+      return JSON.stringify(row[fieldName], replacer)
+    }).join(',')
+  })
+  csvflooddata.unshift(fields.join(',')) // add header column
+  csvflooddata  = csvflooddata.join('\r\n');
+  csvfloodsarray.push(csvflooddata);
+}
+    
+      // document.getElementById("load_data").innerHTML="Load Data";
+      if(issubmit){
+   var text = "";
+      for (var i =0;i<requireddata.length;i++)
+      {   
+       
+        // if(i>0){text=text+"<hr style='height:1px;border-width:0px;color:gray;background-color:gray'/>";}  
+               text = text + "<li name='load_data' id='#load_data'  onclick='usershowtable("+i+");' ><img width='16' height='18' src='assets/img/flood.png'>"+floodname[i] +"  </li>  <div id='user-list"+i+"' style='overflow: auto;'></div> " ;
+              
+      
+      }
+    
+    }
+    else{
+      alert("submit again");
+    }
+   document.getElementById('feature-list').innerHTML=text; 
+   
+   
+  }
+   
+      // document.getElementById("data2").innerHTML="employee1.csv";
+      // document.getElementById("data3").innerHTML="employee2.csv";
+      // document.getElementById("data4").innerHTML="employee3.csv";
+  }
+
+function flytoloaction(i){
+map.flyTo([requireddata[i][0]["Latitude"],requireddata[i][0]["Longitude"]],8,{
+  duration:3
+})
+var a=requireddata[i][0]["Latitude"];
+var b=requireddata[i][0]["Longitude"];
+var x=a-1
+var y=a+1
+var  x1=b-1
+var y1=b+1
+ 
+  var latlngs = [ [ x,x1],[ x, y1 ], [ y, y1 ], [ y, x1 ], [x, x1 ]];
+  var polygon = L.polygon(latlngs, {color: 'red'}).addTo(map);
+
+// // zoom the map to the polygon
+// map.fitBounds(polygon.getBounds());
+}
+
+function usershowtable(i){
+   
+  flytoloaction(i);
+     if(ispaused){
+   
+    employee_data =csvfloodsarray[i].split(/\r?\n|\r/);
+    detaildata=employee_data;
+        var table_data = '<ol><li ><b>Select </b>&nbsp;&nbsp;&nbsp;'+"          "+'<b>Sensor </b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+"          "+'<b>Acquired</b>&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+"          "+'<b>Cloud Cover</b>&nbsp;&nbsp;&nbsp;&nbsp;'+"          "+'<b>Provider</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; '+"          "+'<b>Details</b></li>';
+        for(var count = 1; count<employee_data.length; count++)
+        {     
+                // //you will get acctual output in array
+                // if(count>1){
+                //   table_data +=  '<li >Select'+"          "+'Sensor'+"          "+' Acquired'+"          "+'Cloud Cover'+"          "+'Provider'+"          "+'Details';
+               
+                    
+                //   }
+          
+        cell_data = employee_data[count].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+              
+        
+        if(cell_data[8].length===3){
+          cell_data[8]+="0";
+        }
+        if(cell_data[8].length===1){
+        cell_data[8]+=".00";
+        }
+      
+        // if(cell_data[12].length===3){
+        //    table_data +=  '<li  onclick="Loadcsv('+count+');">'+' <input type="checkbox" class="custom-control-input" id="customCheck">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+"          "+cell_data[12].replace(/"/g,"")+ "<b>.DD</b>"+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[6].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[8].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[16].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+'<i class="fa fa-plus-circle" style="font-size:20px;color:black"></i> </li> <div id="employee_table'+count+'" style="overflow: auto;"></div>';
+        // // }
+    
+            table_data +=  '<li  onclick="Loadcsv('+count+');">'+' <input type="checkbox" class="custom-control-input" id="customCheck">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+"          "+cell_data[12].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[6].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[8].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+cell_data[16].replace(/"/g,"")+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'+'<i class="fa fa-plus-circle" style="font-size:20px;color:black"></i> </li> <div id="employee_table'+count+'" style="overflow: auto;"></div>';
+            // document.getElementById("customCheck").checked = false;
+            // if(document.getElementById("customCheck").checked===true){
+            //   rowclick(i);
+            //   }
+         
+           // console.log(cell_data[8].length);
+          //  table_data += '  <td>  '+cell_data[6].replace(/"/g,"")+'</td>';
+          
+          //  table_data += '  <td>  '+cell_data[8].replace(/"/g,"")+'</td>';
+          //  table_data += '  <td>  '+cell_data[16].replace(/"/g,"")+'</td>';
+          //  table_data += '  <td>   <i class="fa fa-plus-circle" style="font-size:20px;color:black"></i> </li> <div id="employee_table'+i+'" style="overflow: auto;"></div>';
+         }
+       
+        }
+        table_data+='</ol>'
+      
+    document.getElementById('user-list'+i+'').style.height = 50+ "vh";
+     $('#user-list'+i+'').html(table_data);
+    
+   
+}
+function Loadcsv(i){
+     
+     if(ispaused){
+   
+ 
+        var table_data1 = '<table class="table table-bordered table-striped"  > ';
+        for(var count = 0; count<2; count++)
+        {     
+                //you will get acctual output in array
+          if(count==0){
+          cell_data = detaildata[count].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);}
+          else{
+            cell_data = detaildata[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+          }
+              
+         table_data1 += ' <tr id="roweve"  onclick="rowclick(this)"  >  ';
+         for(var cell_count=0; cell_count<cell_data.length; cell_count++)
+         {
+          if(count === 0)
+          {
+           table_data1 += '  <th>  '+cell_data[cell_count]+'</th>';
+             
+          }
+          
+          else{
+            table_data1 += '<td>'+cell_data[cell_count]+'</td>';
+          }
+         }
+         table_data1 += '</tr>';
+        }
+        table_data1 += '</table>';
+        
+        // for(var j=0;j<allflood.length;j++){
+      // if(i==j){
+    document.getElementById('employee_table'+i+'').style.height = 30+"vh";
+     $('#employee_table'+i+'').html(table_data1);
+  // } }
+   
+      }
+       }
+  
+  
+       
+  function rowclick(rowno){
+     
+   let msg=rowno.cells[4].innerHTML;
+   
+   var WithOutBrackets=msg.replace(/[\[\]']+/g,'');
+   var me=WithOutBrackets.replace(/"/g,"");
+           
+  //   var obj=  JSON.parse( WithOutBrackets   );
+   //alert(typeof(me));
+   //we have to do string to integer and understand about how array convert into chunk array
+  
+    var  coordinates=  me.split(',');
+    console.log( coordinates);
+  const chunk =  coordinates => {
+     const size = 2;
+     const chunkedArray = [];
+     for (let i = 0; i <  coordinates.length; i++) {
+        const last = chunkedArray[chunkedArray.length - 1];
+        if(!last || last.length === size){
+           chunkedArray.push([ coordinates[i]]);
+        }else{
+           last.push( coordinates[i]);
+        }
+     };
+     return chunkedArray;
+  };
+   
+         alert(chunk( coordinates));
+      var states = [{
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+          "type": "Polygon",
+          "coordinates":[[["129.86889616213875", "31.85092400331079"], ["130.13226059277255", "31.804015706859424"], ["130.11415527263486", "31.731335321675704"], ["129.85082873777677", "31.77787200251359"], ["129.86889616213875", "31.85092400331079"]]]
+         }
+  
+  }];
+   states[0]["geometry"]["coordinates"]=[chunk( coordinates)];
+  console.log(states);
+  L.geoJSON(states, {
+      style: function(feature) {
+          switch (feature.properties.party) {
+              case 'Republican': return {color: "#ff0000"};
+              case 'Democrat':   return {color: "#0000ff"};
+          }
+      }
+  }).addTo(map);
+  
+  }
+  
+  
+   //  fetch("https://agile-hollows-34401.herokuapp.com/flooddata").then((response) =>{
+      
+  //     return response.json();
+  //   }).then((actualdata)=>{
+  //     allflood=actualdata;
+  //     if(typeof(allflood)=="object"){
+  //       issubmit=true;
+  //     }
+    
+   
+  //   // var flooddatasearch = JSON.parse(actualdata);
+  // for(var i=0;i<actualdata[0]["FloodCSVData"].length;i++){
+  //   actualdata[0]["FloodCSVData"][i]["geometry"]= JSON.stringify(actualdata[0]["FloodCSVData"][i]["geometry"]);
+     
+    
+  //   if(i==actualdata[0]["FloodCSVData"].length-1){
+  //     ispaused=true;
+  //   }
+  //  }
+  
+  // for(var j=0;j<actualdata.length;j++){
+  //       startdate=actualdata[j]["StartDate"];
+  //       enddate=actualdata[j]["EndDate"];
+  // }
+    
+   
+  // flooddatasearch=actualdata[0]["FloodCSVData"];
+  // var fields = Object.keys(flooddatasearch[0])
+  // var replacer = function(key, value) { return value === null ? '' : value } 
+  //  csvflooddata =flooddatasearch.map(function(row){
+  //   return fields.map(function(fieldName){
+  //     return JSON.stringify(row[fieldName], replacer)
+  //   }).join(',')
+  // })
+  // csvflooddata.unshift(fields.join(',')) // add header column
+  // csvflooddata  =  csvflooddata.join('\r\n');
+   
+   
+  
+  //   }).catch((error)=>{
+  //     console.log(error);
+  //   });
+  
+  
+  //   $.ajax({
+  //   url: 'https://agile-hollows-34401.herokuapp.com/flooddata',
+  //   dataType: 'json',
+  //   success: function(data) {
+  //     console.log(data);
+  //   }
+  // });
+  // fetch('https://randomuser.me/api/?results=10').then(function(response) {
+  //   return response.json();
+  // }).then(function(json) {
+  //   let products = json;
+  //   initialize(products);
+  // }).catch(function(err) {
+  //   console.log('Fetch problem: ' + err.message);
+  // });
+  
+   
+   
+  
+  
+    //   $(document).ready(function(){
+    //  $('#load_data').click(function(){ alert(country);
+    //   $.ajax({
+    //    url:'employee.csv',
+    //    dataType:"text",
+    //    crossOrigin: true,
+    //             type: 'GET',
+    //             xhrFields: { withCredentials: true },
+    //    success:function(data)
+    //    { alert(typeof(data)); 
+    //     employee_data =csvflooddata.split(/\r?\n|\r/);
+    //     var table_data = '<table class="table table-bordered table-striped">';
+    //     for(var count = 0; count<employee_data.length; count++)
+    //     {     
+    //             //you will get acctual output in array
+          
+    //           cell_data = employee_data[count].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+              
+    //      table_data += '<tr id="roweve"  onclick="rowclick(this)">';
+    //      for(var cell_count=0; cell_count<cell_data.length; cell_count++)
+    //      {
+    //       if(count === 0)
+    //       {
+    //        table_data += '<th>'+cell_data[cell_count]+'</th>';
+             
+    //       }
+    //       else
+    //       {
+    //        table_data += '<td>'+cell_data[cell_count]+'</td>';
+    //       }
+    //      }
+    //      table_data += '</tr>';
+    //     }
+    //     table_data += '</table>';
+    //     $('#employee_table').html(table_data);
+    //    }
+    //   });
+    //  });
+     
+    // });
+     </script>
+ -->
